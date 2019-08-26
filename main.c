@@ -68,7 +68,7 @@
 ADC_HandleTypeDef hadc1;
 
 uint8_t i = 0;
-uint32_t temp = 0;
+uint16_t temp = 0;
 
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
@@ -96,6 +96,8 @@ static void MX_ADC1_Init(void);
   */
 int main(void)
 {
+	volatile uint8_t f_hi = 0x01U;
+	volatile uint8_t f_lo = 0x0FU;
   /* USER CODE BEGIN 1 */
 
   /* USER CODE END 1 */
@@ -125,9 +127,7 @@ int main(void)
 	IWDG->KR = ((uint16_t)0xAAAA);	// Watchdog no bark
 
   MISC_PORT_REG_WR = SNES_IRQ_OFF; // TRANSCEIVER CART TO SNES (and disable IRQ line)
-  
-  //DATA_PORT_REG_WR = 0xFFFF0000U;
-  //DATA_PORT_REG_WR = 0xFFFF0077U;
+
 
   while(GPIOF->IDR != RST_VEC_LOC_LO){}
   DATA_PORT_REG_WR = RST_VEC_BYT_LO;
@@ -135,81 +135,38 @@ int main(void)
   DATA_PORT_REG_WR = RST_VEC_BYT_HI;
 	DATA_PORT_REG_WR = RST_VEC_BYT_HI;
 	DATA_PORT_REG_WR = RST_VEC_BYT_HI;
-  //while(GPIOF->IDR != 0x000080FAU){}
+		
   while(1)
   {
-		
     if((MISC_PORT_REG_RD & SNES_CART_OFF))
     {
       MISC_PORT_REG_WR = TRANS_SNES_2_CART; // TRANSCEIVER SNES TO CART
-      //DATA_PORT_REG_WR = 0xFFFF0066U;
       while(MISC_PORT_REG_RD & SNES_CART_OFF){}
       MISC_PORT_REG_WR = SNES_IRQ_OFF; // TRANSCEIVER CART TO SNES
     }
 		else
 		{
 		
-			temp = (ADDR_PORT_REG_RD & 0x7FFFU);
+			temp = (ADDR_PORT_REG_RD & 0x00007FFFU);
 			
-			if(temp < 0x4440U)
+			if(temp < 0x4FFFU)
 			{
 				DATA_PORT_REG_WR = (0xFFFF0000 | rom_bank_0[temp]);
-				//IWDG->KR = ((uint16_t)0xAAAA);	// Watchdog no bark
 			}
-			
-			if(temp == 0x7FEAU)
+			else
 			{
-				 DATA_PORT_REG_WR = NMI_VEC_BYT_LO;
-					while(GPIOF->IDR != NMI_VEC_LOC_HI){}
-					DATA_PORT_REG_WR = NMI_VEC_BYT_HI;
-						DATA_PORT_REG_WR = NMI_VEC_BYT_HI;
-						DATA_PORT_REG_WR = NMI_VEC_BYT_HI;
-
-				while(1)
-				{
-					//while(GPIOF->IDR != NMI_VEC_LOC_LO){}
-					/*
-					DATA_PORT_REG_WR = NMI_VEC_BYT_LO;
-					while(GPIOF->IDR != NMI_VEC_LOC_HI){}
-					DATA_PORT_REG_WR = NMI_VEC_BYT_HI;
-					DATA_PORT_REG_WR = NMI_VEC_BYT_HI;
-					DATA_PORT_REG_WR = NMI_VEC_BYT_HI;
-					*/
-
-    if((MISC_PORT_REG_RD & SNES_CART_OFF))
-    {
-      MISC_PORT_REG_WR = TRANS_SNES_2_CART; // TRANSCEIVER SNES TO CART
-      //DATA_PORT_REG_WR = 0xFFFF0066U;
-      while(MISC_PORT_REG_RD & SNES_CART_OFF){}
-      MISC_PORT_REG_WR = SNES_IRQ_OFF; // TRANSCEIVER CART TO SNES
-    }
-		else
-		{
-			
-			temp = (ADDR_PORT_REG_RD & 0xFFEAU);
-
-			if(temp)
-			{
-					DATA_PORT_REG_WR = NMI_VEC_BYT_LO;
-					while(GPIOF->IDR != NMI_VEC_LOC_HI){}
-					DATA_PORT_REG_WR = NMI_VEC_BYT_HI;
-					DATA_PORT_REG_WR = NMI_VEC_BYT_HI;
-					DATA_PORT_REG_WR = NMI_VEC_BYT_HI;
-			}
-		}
-    
-
-						
-				}
-
+				if(temp == 0x7FEAU)
+					DATA_PORT_REG_WR = (0xFFFF0000 | rom_bank_0[0x4FEAU]);
+				
+				if(temp == 0x7FEBU)
+					DATA_PORT_REG_WR = (0xFFFF0000 | rom_bank_0[0x4FEBU]);
+				
+				rom_bank_0[17413] = f_hi;
+				rom_bank_0[17412] = f_lo;
 			}
 			
-			
-
 		}
-
 	}
-
 }
 
 /**
