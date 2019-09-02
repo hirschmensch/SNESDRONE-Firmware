@@ -61,8 +61,10 @@
 #define RST_VEC_BYT_HI 0xFFFF0088U
 #define NMI_VEC_LOC_LO 0x0000FFEAU
 #define NMI_VEC_LOC_HI 0x0000FFEBU
-#define NMI_VEC_BYT_LO 0xFFFF0000U
-#define NMI_VEC_BYT_HI 0xFFFF001EU
+#define BANK0_FUL_SIZE 0x00007FFFU
+#define BANK0_MAX_SIZE 0x00004FFFU
+
+#define PORT_WRIT_MASK 0xFFFF0000U
 
 /* USER CODE END Includes */
 
@@ -71,7 +73,6 @@
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
 
-uint8_t i = 0;
 uint16_t temp = 0;
 
 /* USER CODE END PV */
@@ -85,37 +86,7 @@ void SystemClock_Config(void);
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
-volatile uint8_t adc[16];
 volatile uint32_t adc_32[8];
-volatile uint32_t adc_prev1_32;
-volatile uint32_t adc_prev2_32;
-volatile uint32_t adc_prev3_32;
-volatile uint32_t adc_prev4_32;
-volatile uint32_t adc_prev5_32;
-volatile uint32_t adc_prev6_32;
-volatile uint32_t adc_prev7_32;
-volatile uint32_t adc_prev8_32;
-volatile uint32_t adc_prev9_32;
-volatile uint32_t adc_prev10_32;
-volatile uint32_t adc_prev11_32;
-volatile uint32_t adc_prev12_32;
-volatile uint32_t adc_now_32;
-
-void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
-{
-
-		//adc[0] = adc_32[0];
-	/*
-		adc[1] = adc_32[0] & 0xFF;
-		adc[2] = adc_32[1] >> 8;
-		adc[3] = adc_32[1] & 0xFF;
-		adc[4] = adc_32[2] >> 8;
-		adc[5] = adc_32[2] & 0xFF;
-		adc[6] = adc_32[3] >> 8;
-		adc[7] = adc_32[3] & 0xFF;
-*/
-	
-}
 
 /* USER CODE END 0 */
 
@@ -152,21 +123,7 @@ int main(void)
   MX_ADC1_Init();
   /* USER CODE BEGIN 2 */
 	
-	HAL_ADC_Start_DMA(&hadc1,adc_32,8);
-	
-	
-	//adc[0] = 0x01;
-	//adc[1] = 0x00;
-	
-	adc[2] = 0x00;
-	adc[3] = 0x00;
-	/*
-	adc[4] = 0x01;
-	adc[5] = 0x00;
-	adc[6] = 0x01;
-	adc[7] = 0x00;
-	*/
-	
+	HAL_ADC_Start_DMA(&hadc1,adc_32,8);  // Enable ADC DMA
 	
 	__disable_irq();
 	
@@ -174,10 +131,12 @@ int main(void)
 
   MISC_PORT_REG_WR = SNES_IRQ_OFF; // TRANSCEIVER CART TO SNES (and disable IRQ line)
 
-  while(GPIOF->IDR != RST_VEC_LOC_LO){}
+  // Provide Reset Vector to SNES CPU
+	// Vector defined as 0x8800 at compile time
+  while(GPIOF->IDR != RST_VEC_LOC_LO){}  // Wait for Reset Vector query
   DATA_PORT_REG_WR = RST_VEC_BYT_LO;
-  while(GPIOF->IDR != RST_VEC_LOC_HI){}
-  DATA_PORT_REG_WR = RST_VEC_BYT_HI;
+  while(GPIOF->IDR != RST_VEC_LOC_HI){}  // Wait for 2nd byte
+  DATA_PORT_REG_WR = RST_VEC_BYT_HI;  // write three times for timing
 	DATA_PORT_REG_WR = RST_VEC_BYT_HI;
 	DATA_PORT_REG_WR = RST_VEC_BYT_HI;
 
@@ -191,89 +150,61 @@ int main(void)
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */
-		
-		
-		if((MISC_PORT_REG_RD & SNES_CART_OFF))
+
+		if((MISC_PORT_REG_RD & SNES_CART_OFF))  // No Cart read access means transceiver direction change
     {
-      MISC_PORT_REG_WR = TRANS_SNES_2_CART; // TRANSCEIVER SNES TO CART
-      while(MISC_PORT_REG_RD & SNES_CART_OFF){}
-      MISC_PORT_REG_WR = SNES_IRQ_OFF; // TRANSCEIVER CART TO SNES
+      MISC_PORT_REG_WR = TRANS_SNES_2_CART;  // TRANSCEIVER SNES TO CART
+      while(MISC_PORT_REG_RD & SNES_CART_OFF){}  // Wait for it...
+      MISC_PORT_REG_WR = SNES_IRQ_OFF;  // TRANSCEIVER CART TO SNES
     }
 		else
 		{
-		  //MISC_PORT_REG_WR = SNES_IRQ_OFF; // TRANSCEIVER CART TO SNES
-			temp = (ADDR_PORT_REG_RD & 0x00007FFFU);
+			temp = (ADDR_PORT_REG_RD & BANK0_FUL_SIZE);  // Assuming Cart read access (cut all above bank 0)
 			
-			if(temp < 0x4FFFU)
+			if(temp < BANK0_MAX_SIZE)  // Bank 0 maximum size = 0x4FFF (20.479 bytes)
 			{
-				DATA_PORT_REG_WR = (0xFFFF0000 | rom_bank_0[temp]);
+				DATA_PORT_REG_WR = (PORT_WRIT_MASK | rom_bank_0[temp]);  // Provide ROM data
 			}
-			else
+			else  // assuming NMI vector fetch (above 0x4FFF)
 			{
-				if(temp == 0x7FEAU)
-					DATA_PORT_REG_WR = (0xFFFF0000 | rom_bank_0[0x4FEAU]);
+				if(temp == NMI_VEC_LOC_LO)
+					DATA_PORT_REG_WR = (PORT_WRIT_MASK | rom_bank_0[0x4FEAU]);  // 1st byte of NMI vector needs to be stored at 0x4FEA (20.458) in ROM
 				
-				if(temp == 0x7FEBU)
+				if(temp == NMI_VEC_LOC_HI)
 				{
-					DATA_PORT_REG_WR = (0xFFFF0000 | rom_bank_0[0x4FEBU]);
-					while(!(MISC_PORT_REG_RD & SNES_CART_OFF)){}
-						MISC_PORT_REG_WR = TRANS_SNES_2_CART; // TRANSCEIVER SNES TO CART
-						
-						
-						adc_prev1_32 = adc_prev2_32;
-						adc_prev2_32 = adc_prev3_32;
-						adc_prev3_32 = adc_prev4_32;
-						adc_prev4_32 = adc_prev5_32;
-						adc_prev5_32 = adc_prev6_32;
-						adc_prev6_32 = adc_prev7_32;
-						adc_prev7_32 = adc_prev8_32;
-						adc_prev8_32 = adc_prev9_32;
-						adc_prev9_32 = adc_prev10_32;
-						adc_prev10_32 = adc_prev11_32;
-						adc_prev11_32 = adc_prev12_32;
-						adc_prev12_32 = adc_32[0];
-						
-						adc_now_32 = (adc_prev1_32 + adc_prev2_32 + adc_prev3_32 + adc_prev4_32 + adc_prev5_32 + adc_prev6_32 + adc_prev7_32 + adc_prev8_32 + adc_prev9_32 + adc_prev10_32 + adc_prev11_32 + adc_prev12_32)/12;
-						
-						//rom_bank_0[17413] = adc[0];					// Freq1 HI
-				//rom_bank_0[17412] = adc[1];					// Freq1 LO
-						//adc_32[0] = (adc_32[0] + adc_prev_32[0]) / 2;
-						//adc_prev_32[0] = adc_32[0];
-						rom_bank_0[17413] = (uint8_t)((adc_now_32 / 8) >> 8);
-						rom_bank_0[17412] = (uint8_t)((adc_now_32 / 8) & 0xFF);
-						
-				//rom_bank_0[17424] = adc[2];					// Freq2 HI
-				//rom_bank_0[17423] = adc[3];					// Freq2 LO
-						
-						rom_bank_0[17424] = (uint8_t)((adc_32[1] / 8) >> 8);
-						rom_bank_0[17423] = (uint8_t)((adc_32[1] / 8) & 0xFF);
-						
-				//rom_bank_0[17435] = adc[4];					// Freq3 HI
-				//rom_bank_0[17434] = adc[5];					// Freq3 LO
-						rom_bank_0[17435] = (uint8_t)((adc_32[2] / 8) >> 8);
-						rom_bank_0[17436] = (uint8_t)((adc_32[2] / 8) & 0xFF);
-						
-				//						rom_bank_0[17446] = adc[6];					// Freq4 HI
-				//rom_bank_0[17445] = adc[7];					// Freq4 LO
-				rom_bank_0[17446] = (uint8_t)((adc_32[3] / 8) >> 8);
-						rom_bank_0[17445] = (uint8_t)((adc_32[3] / 8) & 0xFF);
-						
-						
-      while(MISC_PORT_REG_RD & SNES_CART_OFF){}
-      MISC_PORT_REG_WR = SNES_IRQ_OFF; // TRANSCEIVER CART TO SNES
+					DATA_PORT_REG_WR = (PORT_WRIT_MASK | rom_bank_0[0x4FEBU]);  // 2nd byte of NMI vector needs to be stored at 0x4FEB (20.459) in ROM
 					
-				}
-				
-			}
-			
-		}
-		
-		
-		
+					while(!(MISC_PORT_REG_RD & SNES_CART_OFF)){}  // Wait for SNES to finish reading NMI vector
+					MISC_PORT_REG_WR = TRANS_SNES_2_CART;  // TRANSCEIVER SNES TO CART
+					/*                                                                   */
+					/* MCU is "off the hook" now.                                        */
+					/* There's a lot of processing going on in the SNES CPU right now    */
+					/* and during this time the MCU is able to read ADC inputs.          */
+					/*                                                                   */
 
+					rom_bank_0[17413] = (uint8_t)((adc_32[0] / 8) >> 8);  // Freq1 HI
+					rom_bank_0[17412] = (uint8_t)((adc_32[0] / 8) & 0xFF);  // Freq1 LO
+
+					rom_bank_0[17424] = (uint8_t)((adc_32[1] / 8) >> 8);  // Freq2 HI
+					rom_bank_0[17423] = (uint8_t)((adc_32[1] / 8) & 0xFF);  // Freq2 LO
+
+					rom_bank_0[17435] = (uint8_t)((adc_32[2] / 8) >> 8);  // Freq3 HI
+					rom_bank_0[17436] = (uint8_t)((adc_32[2] / 8) & 0xFF);  // Freq3 LO
+
+					rom_bank_0[17446] = (uint8_t)((adc_32[3] / 8) >> 8);  // Freq4 HI
+					rom_bank_0[17445] = (uint8_t)((adc_32[3] / 8) & 0xFF);  // Freq4 LO
+						
+					/*                                                                   */
+					/* MCU going back to "normal" ROM simulation mode...                 */
+					/*                                                                   */
+
+					while(MISC_PORT_REG_RD & SNES_CART_OFF){}
+						MISC_PORT_REG_WR = SNES_IRQ_OFF; // TRANSCEIVER CART TO SNES
+				}
+			}
+		}
   }
   /* USER CODE END 3 */
-
 }
 
 /**
