@@ -276,10 +276,12 @@ int main(void)
 						adc_prev121_32 = adc_32[0];
 						
 						adc_now1_32 = (adc_prev11_32 + adc_prev21_32 + adc_prev31_32 + adc_prev41_32 + adc_prev51_32 + adc_prev61_32 + adc_prev71_32 + adc_prev81_32 + adc_prev91_32 + adc_prev101_32 + adc_prev111_32 + adc_prev121_32)/12;
+						
 						//rom_bank_0[17413] = adc[0];					// Freq1 HI
 				//rom_bank_0[17412] = adc[1];					// Freq1 LO
 						//adc_32[0] = (adc_32[0] + adc_prev_32[0]) / 2;
 						//adc_prev_32[0] = adc_32[0];
+
 						rom_bank_0[17413] = (uint8_t)((adc_now1_32 / 1) >> 8);
 						rom_bank_0[17412] = (uint8_t)((adc_now1_32 / 1) & 0xFF);
 						
@@ -296,7 +298,7 @@ int main(void)
 						adc_prev102_32 = adc_prev112_32;
 						adc_prev112_32 = adc_prev122_32;
 						adc_prev122_32 = adc_32[1];
-						
+											
 						adc_now2_32 = (adc_prev12_32 + adc_prev22_32 + adc_prev32_32 + adc_prev42_32 + adc_prev52_32 + adc_prev62_32 + adc_prev72_32 + adc_prev82_32 + adc_prev92_32 + adc_prev102_32 + adc_prev112_32 + adc_prev122_32)/12;
 						
 						
@@ -317,13 +319,13 @@ int main(void)
 						adc_prev123_32 = adc_32[2];
 						
 						adc_now3_32 = (adc_prev13_32 + adc_prev23_32 + adc_prev33_32 + adc_prev43_32 + adc_prev53_32 + adc_prev63_32 + adc_prev73_32 + adc_prev83_32 + adc_prev93_32 + adc_prev103_32 + adc_prev113_32 + adc_prev123_32)/12;
-						
-						
+
 						rom_bank_0[17424] = (uint8_t)((adc_now2_32 / 1) >> 8);
 						rom_bank_0[17423] = (uint8_t)((adc_now2_32 / 1) & 0xFF);
 						
 				//rom_bank_0[17435] = adc[4];					// Freq3 HI
 				//rom_bank_0[17434] = adc[5];					// Freq3 LO
+
 						rom_bank_0[17435] = (uint8_t)((adc_now3_32 / 8) >> 8);
 						rom_bank_0[17434] = (uint8_t)((adc_now3_32 / 8) & 0xFF);
 						
@@ -344,8 +346,7 @@ int main(void)
 						adc_prev124_32 = adc_32[3];
 						
 						adc_now4_32 = (adc_prev14_32 + adc_prev24_32 + adc_prev34_32 + adc_prev44_32 + adc_prev54_32 + adc_prev64_32 + adc_prev74_32 + adc_prev84_32 + adc_prev94_32 + adc_prev104_32 + adc_prev114_32 + adc_prev124_32)/12;
-						
-				
+
 				rom_bank_0[17446] = (uint8_t)((adc_now4_32 / 8) >> 8);
 						rom_bank_0[17445] = (uint8_t)((adc_now4_32 / 8) & 0xFF);
 						
