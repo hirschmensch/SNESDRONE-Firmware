@@ -1,0 +1,27 @@
+--cpu Cortex-M7.fp.dp
+"uvision_project_22_11_2019\startup_stm32f777xx.o"
+"uvision_project_22_11_2019\main.o"
+"uvision_project_22_11_2019\stm32f7xx_it.o"
+"uvision_project_22_11_2019\stm32f7xx_hal_msp.o"
+"uvision_project_22_11_2019\stm32f7xx_hal_adc.o"
+"uvision_project_22_11_2019\stm32f7xx_hal_adc_ex.o"
+"uvision_project_22_11_2019\stm32f7xx_hal_cortex.o"
+"uvision_project_22_11_2019\stm32f7xx_hal_tim.o"
+"uvision_project_22_11_2019\stm32f7xx_hal_tim_ex.o"
+"uvision_project_22_11_2019\stm32f7xx_hal_rcc.o"
+"uvision_project_22_11_2019\stm32f7xx_hal_rcc_ex.o"
+"uvision_project_22_11_2019\stm32f7xx_hal_flash.o"
+"uvision_project_22_11_2019\stm32f7xx_hal_flash_ex.o"
+"uvision_project_22_11_2019\stm32f7xx_hal_gpio.o"
+"uvision_project_22_11_2019\stm32f7xx_hal_dma.o"
+"uvision_project_22_11_2019\stm32f7xx_hal_dma_ex.o"
+"uvision_project_22_11_2019\stm32f7xx_hal_pwr.o"
+"uvision_project_22_11_2019\stm32f7xx_hal_pwr_ex.o"
+"uvision_project_22_11_2019\stm32f7xx_hal.o"
+"uvision_project_22_11_2019\stm32f7xx_hal_i2c.o"
+"uvision_project_22_11_2019\stm32f7xx_hal_i2c_ex.o"
+"uvision_project_22_11_2019\system_stm32f7xx.o"
+--library_type=microlib --strict --scatter "uVision_Project_22_11_2019\uVision_Project_22_11_2019.sct"
+--summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
+--info sizes --info totals --info unused --info veneers
+--list "uVision_Project_22_11_2019.map" -o uVision_Project_22_11_2019\uVision_Project_22_11_2019.axf
