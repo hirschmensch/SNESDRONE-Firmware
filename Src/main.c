@@ -82,6 +82,7 @@ static void MX_ADC1_Init(void);
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
 uint16_t temp = 0;
+uint16_t adc_temp = 0;
 volatile uint8_t adc[16];
 volatile uint32_t adc_32[8];
 
@@ -190,18 +191,46 @@ int main(void)
 					DATA_PORT_REG_WR = (0xFFFF0000 | rom_bank_0[0x4FEBU]);
 					while(!(MISC_PORT_REG_RD & SNES_CART_OFF)){}
 					MISC_PORT_REG_WR = TRANS_SNES_2_CART; // TRANSCEIVER SNES TO CART
-						
-					rom_bank_0[17413] = (uint8_t)((adc_32[0] / 1) >> 8);
-					rom_bank_0[17412] = (uint8_t)((adc_32[0] / 1) & 0xFF);
 					
-					rom_bank_0[17424] = (uint8_t)((adc_32[1] / 1) >> 8);
-					rom_bank_0[17423] = (uint8_t)((adc_32[1] / 1) & 0xFF);
+					/* Pitch 1: 0x4405 0x4404 */
+					adc_32[0] = ((~adc_32[0]) & 0x0FFFU);
+					rom_bank_0[17413] = (uint8_t)((adc_32[0] / 8) >> 8);
+					rom_bank_0[17412] = (uint8_t)((adc_32[0] / 8) & 0xFF);
+					
+					/* Pitch 2: 0x4410 0x440F */
+					adc_32[1] = ((~adc_32[1]) & 0x0FFFU);
+					rom_bank_0[17424] = (uint8_t)((adc_32[1] / 8) >> 8);
+					rom_bank_0[17423] = (uint8_t)((adc_32[1] / 8) & 0xFF);
 						
+					/* Pitch 3: 0x441B 0x441A */
+					adc_32[2] = ((~adc_32[2]) & 0x0FFFU);
 					rom_bank_0[17435] = (uint8_t)((adc_32[2] / 8) >> 8);
 					rom_bank_0[17434] = (uint8_t)((adc_32[2] / 8) & 0xFF);
 						
+					/* Pitch 4: 0x4426 0x4425 */
+					adc_32[3] = ((~adc_32[3]) & 0x0FFFU);
 					rom_bank_0[17446] = (uint8_t)((adc_32[3] / 8) >> 8);
 					rom_bank_0[17445] = (uint8_t)((adc_32[3] / 8) & 0xFF);
+						
+					/* Volume 1: 0x4402 (0x4403) */
+					adc_32[4] = ((~adc_32[4]) & 0x0FFFU);
+					rom_bank_0[0x4402] = (uint8_t)((adc_32[4] / 1) >> 5) | 0x0FU;
+					rom_bank_0[0x4403] = (uint8_t)((adc_32[4] / 1) >> 5) | 0x0FU;
+					
+					/* Volume 2: 0x440D (0x440E) */
+					adc_32[5] = ((~adc_32[5]) & 0x0FFFU);
+					rom_bank_0[0x440D] = (uint8_t)((adc_32[5] / 1) >> 5) | 0x0FU;
+					rom_bank_0[0x440E] = (uint8_t)((adc_32[5] / 1) >> 5) | 0x0FU;
+						
+					/* Volume 3: 0x4418 (0x4419) */
+					adc_32[6] = ((~adc_32[6]) & 0x0FFFU);
+					rom_bank_0[0x4418] = (uint8_t)((adc_32[6] / 1) >> 5) | 0x0FU;
+					rom_bank_0[0x4419] = (uint8_t)((adc_32[6] / 1) >> 5) | 0x0FU;
+						
+					/* Volume 4: 0x4423 (0x4424) */
+					adc_32[7] = ((~adc_32[7]) & 0x0FFFU);
+					rom_bank_0[0x4423] = (uint8_t)((adc_32[7] / 1) >> 5) | 0x0FU;
+					rom_bank_0[0x4424] = (uint8_t)((adc_32[7] / 1) >> 5) | 0x0FU;
 						
 							
 					while(MISC_PORT_REG_RD & SNES_CART_OFF){}
