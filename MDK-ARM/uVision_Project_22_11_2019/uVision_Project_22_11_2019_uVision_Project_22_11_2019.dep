@@ -1,7 +1,7 @@
 Dependencies for Project 'uVision_Project_22_11_2019', Target 'uVision_Project_22_11_2019': (DO NOT MODIFY !)
 F (startup_stm32f777xx.s)(0x5DD91C75)(--cpu Cortex-M7.fp.dp --pd "__EVAL SETA 1" -g --apcs=interwork --pd "__MICROLIB SETA 1"-I.\RTE\_uVision_Project_22_11_2019-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.4.0\CMSIS\Core\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F7xx_DFP\2.11.0\Drivers\CMSIS\Device\ST\STM32F7xx\Include--pd "__UVISION_VERSION SETA 526" --pd "_RTE_ SETA 1" --pd "STM32F777xx SETA 1"--list startup_stm32f777xx.lst --xref -o uvision_project_22_11_2019\startup_stm32f777xx.o --depend uvision_project_22_11_2019\startup_stm32f777xx.d)
-F (..\Src\rom_bank_0.h)(0x5E56D09D)()
-F (../Src/main.c)(0x5E56E967)(--c99 --execute_only -c --cpu Cortex-M7.fp.dp -D__EVAL -D__MICROLIB -g -O1 -Otime --apcs=interwork --split_sections -I ../Inc -I ../Drivers/STM32F7xx_HAL_Driver/Inc -I ../Drivers/STM32F7xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F7xx/Include -I ../Drivers/CMSIS/Include-I.\RTE\_uVision_Project_22_11_2019-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.4.0\CMSIS\Core\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F7xx_DFP\2.11.0\Drivers\CMSIS\Device\ST\STM32F7xx\Include-D__UVISION_VERSION="526" -D_RTE_ -DSTM32F777xx -DUSE_HAL_DRIVER -DSTM32F777xx-o uvision_project_22_11_2019\main.o --omf_browse uvision_project_22_11_2019\main.crf --depend uvision_project_22_11_2019\main.d)
+F (..\Src\rom_bank_0.h)(0x5E58D3F1)()
+F (../Src/main.c)(0x5E5909CD)(--c99 --execute_only -c --cpu Cortex-M7.fp.dp -D__EVAL -D__MICROLIB -g -O1 -Otime --apcs=interwork --split_sections -I ../Inc -I ../Drivers/STM32F7xx_HAL_Driver/Inc -I ../Drivers/STM32F7xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F7xx/Include -I ../Drivers/CMSIS/Include-I.\RTE\_uVision_Project_22_11_2019-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.4.0\CMSIS\Core\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F7xx_DFP\2.11.0\Drivers\CMSIS\Device\ST\STM32F7xx\Include-D__UVISION_VERSION="526" -D_RTE_ -DSTM32F777xx -DUSE_HAL_DRIVER -DSTM32F777xx-o uvision_project_22_11_2019\main.o --omf_browse uvision_project_22_11_2019\main.crf --depend uvision_project_22_11_2019\main.d)
 I (../Inc/main.h)(0x5DD91C73)
 I (../Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal.h)(0x5C311261)
 I (../Inc/stm32f7xx_hal_conf.h)(0x5DD91C73)
@@ -32,7 +32,7 @@ I (../Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_i2c.h)(0x5C311261)
 I (../Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_i2c_ex.h)(0x5C311261)
 I (../Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_pwr.h)(0x5C311261)
 I (../Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_pwr_ex.h)(0x5C311261)
-I (../Src/rom_bank_0.h)(0x5E56D09D)
+I (../Src/rom_bank_0.h)(0x5E58D3F1)
 F (../Src/stm32f7xx_it.c)(0x5DD91C73)(--c99 --execute_only -c --cpu Cortex-M7.fp.dp -D__EVAL -D__MICROLIB -g -O1 -Otime --apcs=interwork --split_sections -I ../Inc -I ../Drivers/STM32F7xx_HAL_Driver/Inc -I ../Drivers/STM32F7xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F7xx/Include -I ../Drivers/CMSIS/Include-I.\RTE\_uVision_Project_22_11_2019-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.4.0\CMSIS\Core\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F7xx_DFP\2.11.0\Drivers\CMSIS\Device\ST\STM32F7xx\Include-D__UVISION_VERSION="526" -D_RTE_ -DSTM32F777xx -DUSE_HAL_DRIVER -DSTM32F777xx-o uvision_project_22_11_2019\stm32f7xx_it.o --omf_browse uvision_project_22_11_2019\stm32f7xx_it.crf --depend uvision_project_22_11_2019\stm32f7xx_it.d)
 I (../Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal.h)(0x5C311261)
 I (../Inc/stm32f7xx_hal_conf.h)(0x5DD91C73)

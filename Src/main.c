@@ -82,13 +82,85 @@ static void MX_ADC1_Init(void);
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
 uint16_t temp = 0;
-uint16_t adc_temp = 0;
-volatile uint8_t adc[16];
+//uint16_t adc_temp = 0;
 volatile uint32_t adc_32[8];
+volatile uint32_t adc_32_buf[8];
+
+#define SMOOTHVALS 16
+#define SMOOTHSHIFTS 4
+volatile uint8_t iSmoothingPointer = 0;
+volatile uint8_t iSmoothingNextPointer = 1;
+volatile uint32_t iSmoothingSum[8];
+volatile uint32_t iSmoothingSumLastAdd[SMOOTHVALS][8];
 
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
+{
+	if(hadc->Instance == ADC1)
+	{
+		adc_32_buf[0] = (~adc_32[0]) & 0x03FFU;
+		iSmoothingSumLastAdd[iSmoothingPointer][0] = adc_32_buf[0];
+		iSmoothingSum[0] = iSmoothingSum[0] - iSmoothingSumLastAdd[iSmoothingNextPointer][0];
+		iSmoothingSum[0] = iSmoothingSum[0] + iSmoothingSumLastAdd[iSmoothingPointer][0];
+		adc_32_buf[0] = iSmoothingSum[0] >> SMOOTHSHIFTS;
+		
+		adc_32_buf[1] = (~adc_32[1]) & 0x03FFU;
+		iSmoothingSumLastAdd[iSmoothingPointer][1] = adc_32_buf[1];
+		iSmoothingSum[1] = iSmoothingSum[1] - iSmoothingSumLastAdd[iSmoothingNextPointer][1];
+		iSmoothingSum[1] = iSmoothingSum[1] + iSmoothingSumLastAdd[iSmoothingPointer][1];
+		adc_32_buf[1] = iSmoothingSum[1] >> SMOOTHSHIFTS;
+		
+		adc_32_buf[2] = (~adc_32[2]) & 0x03FFU;
+		iSmoothingSumLastAdd[iSmoothingPointer][2] = adc_32_buf[2];
+		iSmoothingSum[2] = iSmoothingSum[2] - iSmoothingSumLastAdd[iSmoothingNextPointer][2];
+		iSmoothingSum[2] = iSmoothingSum[2] + iSmoothingSumLastAdd[iSmoothingPointer][2];
+		adc_32_buf[2] = iSmoothingSum[2] >> SMOOTHSHIFTS;
+		
+		adc_32_buf[3] = (~adc_32[3]) & 0x03FFU;
+		iSmoothingSumLastAdd[iSmoothingPointer][3] = adc_32_buf[3];
+		iSmoothingSum[3] = iSmoothingSum[3] - iSmoothingSumLastAdd[iSmoothingNextPointer][3];
+		iSmoothingSum[3] = iSmoothingSum[3] + iSmoothingSumLastAdd[iSmoothingPointer][3];
+		adc_32_buf[3] = iSmoothingSum[3] >> SMOOTHSHIFTS;
+		
+		adc_32_buf[4] = (~adc_32[4]) & 0x03FFU;
+		iSmoothingSumLastAdd[iSmoothingPointer][4] = adc_32_buf[4];
+		iSmoothingSum[4] = iSmoothingSum[4] - iSmoothingSumLastAdd[iSmoothingNextPointer][4];
+		iSmoothingSum[4] = iSmoothingSum[4] + iSmoothingSumLastAdd[iSmoothingPointer][4];
+		adc_32_buf[4] = iSmoothingSum[4] >> SMOOTHSHIFTS;
+		
+		adc_32_buf[5] = (~adc_32[5]) & 0x03FFU;
+		iSmoothingSumLastAdd[iSmoothingPointer][5] = adc_32_buf[5];
+		iSmoothingSum[5] = iSmoothingSum[5] - iSmoothingSumLastAdd[iSmoothingNextPointer][5];
+		iSmoothingSum[5] = iSmoothingSum[5] + iSmoothingSumLastAdd[iSmoothingPointer][5];
+		adc_32_buf[5] = iSmoothingSum[5] >> SMOOTHSHIFTS;
+		
+		adc_32_buf[6] = (~adc_32[6]) & 0x03FFU;
+		iSmoothingSumLastAdd[iSmoothingPointer][6] = adc_32_buf[6];
+		iSmoothingSum[6] = iSmoothingSum[6] - iSmoothingSumLastAdd[iSmoothingNextPointer][6];
+		iSmoothingSum[6] = iSmoothingSum[6] + iSmoothingSumLastAdd[iSmoothingPointer][6];
+		adc_32_buf[6] = iSmoothingSum[6] >> SMOOTHSHIFTS;
+		
+		adc_32_buf[7] = (~adc_32[7]) & 0x03FFU;
+		iSmoothingSumLastAdd[iSmoothingPointer][7] = adc_32_buf[7];
+		iSmoothingSum[7] = iSmoothingSum[7] - iSmoothingSumLastAdd[iSmoothingNextPointer][7];
+		iSmoothingSum[7] = iSmoothingSum[7] + iSmoothingSumLastAdd[iSmoothingPointer][7];
+		adc_32_buf[7] = iSmoothingSum[7] >> SMOOTHSHIFTS;
+
+		iSmoothingPointer++;
+		if(iSmoothingPointer >= SMOOTHVALS)
+		{
+			iSmoothingPointer = 0;
+		}
+					
+		iSmoothingNextPointer++;
+		if(iSmoothingNextPointer >= SMOOTHVALS)
+		{
+			iSmoothingNextPointer = 0;
+		}
+	}
+}
 
 /* USER CODE END 0 */
 
@@ -101,6 +173,7 @@ int main(void)
 {
   /* USER CODE BEGIN 1 */
 	__disable_irq();
+	int i = 0;
 
 
   /* USER CODE END 1 */
@@ -124,6 +197,17 @@ int main(void)
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
+	for(i = 0; i < 8; i++)
+	{
+		while(iSmoothingPointer < SMOOTHVALS)
+		{
+			iSmoothingSumLastAdd[iSmoothingPointer][i] = 0;
+			iSmoothingPointer++;
+		}
+		iSmoothingPointer = 0;
+	}
+	iSmoothingPointer = 0;
+
 
   /* USER CODE END SysInit */
 
@@ -191,47 +275,42 @@ int main(void)
 					DATA_PORT_REG_WR = (0xFFFF0000 | rom_bank_0[0x4FEBU]);
 					while(!(MISC_PORT_REG_RD & SNES_CART_OFF)){}
 					MISC_PORT_REG_WR = TRANS_SNES_2_CART; // TRANSCEIVER SNES TO CART
-					
-					/* Pitch 1: 0x4405 0x4404 */
-					adc_32[0] = ((~adc_32[0]) & 0x0FFFU);
-					rom_bank_0[17413] = (uint8_t)((adc_32[0] / 8) >> 8);
-					rom_bank_0[17412] = (uint8_t)((adc_32[0] / 8) & 0xFF);
+						
+					__enable_irq();
+
+						/* Pitch 1: 0x4405 0x4404 */
+					rom_bank_0[17413] = (uint8_t)(adc_32_buf[4] >> 8);
+					rom_bank_0[17412] = (uint8_t)(adc_32_buf[4] & 0xFF);
 					
 					/* Pitch 2: 0x4410 0x440F */
-					adc_32[1] = ((~adc_32[1]) & 0x0FFFU);
-					rom_bank_0[17424] = (uint8_t)((adc_32[1] / 8) >> 8);
-					rom_bank_0[17423] = (uint8_t)((adc_32[1] / 8) & 0xFF);
+					rom_bank_0[17424] = (uint8_t)(adc_32_buf[3] >> 8);
+					rom_bank_0[17423] = (uint8_t)(adc_32_buf[3] & 0xFF);
 						
 					/* Pitch 3: 0x441B 0x441A */
-					adc_32[2] = ((~adc_32[2]) & 0x0FFFU);
-					rom_bank_0[17435] = (uint8_t)((adc_32[2] / 8) >> 8);
-					rom_bank_0[17434] = (uint8_t)((adc_32[2] / 8) & 0xFF);
+					rom_bank_0[17435] = (uint8_t)(adc_32_buf[2] >> 8);
+					rom_bank_0[17434] = (uint8_t)(adc_32_buf[2] & 0xFF);
 						
 					/* Pitch 4: 0x4426 0x4425 */
-					adc_32[3] = ((~adc_32[3]) & 0x0FFFU);
-					rom_bank_0[17446] = (uint8_t)((adc_32[3] / 8) >> 8);
-					rom_bank_0[17445] = (uint8_t)((adc_32[3] / 8) & 0xFF);
+					rom_bank_0[17446] = (uint8_t)(adc_32_buf[1] >> 8);
+					rom_bank_0[17445] = (uint8_t)(adc_32_buf[1] & 0xFF);
 						
 					/* Volume 1: 0x4402 (0x4403) */
-					adc_32[4] = ((~adc_32[4]) & 0x0FFFU);
-					rom_bank_0[0x4402] = (uint8_t)((adc_32[4] / 1) >> 5) | 0x0FU;
-					rom_bank_0[0x4403] = (uint8_t)((adc_32[4] / 1) >> 5) | 0x0FU;
+					rom_bank_0[0x4402] = (uint8_t)(adc_32_buf[5] >> 3) | 0x0FU;
+					rom_bank_0[0x4403] = (uint8_t)(adc_32_buf[5] >> 3) | 0x0FU;
 					
 					/* Volume 2: 0x440D (0x440E) */
-					adc_32[5] = ((~adc_32[5]) & 0x0FFFU);
-					rom_bank_0[0x440D] = (uint8_t)((adc_32[5] / 1) >> 5) | 0x0FU;
-					rom_bank_0[0x440E] = (uint8_t)((adc_32[5] / 1) >> 5) | 0x0FU;
+					rom_bank_0[0x440D] = (uint8_t)(adc_32_buf[6] >> 3) | 0x0FU;
+					rom_bank_0[0x440E] = (uint8_t)(adc_32_buf[6] >> 3) | 0x0FU;
 						
 					/* Volume 3: 0x4418 (0x4419) */
-					adc_32[6] = ((~adc_32[6]) & 0x0FFFU);
-					rom_bank_0[0x4418] = (uint8_t)((adc_32[6] / 1) >> 5) | 0x0FU;
-					rom_bank_0[0x4419] = (uint8_t)((adc_32[6] / 1) >> 5) | 0x0FU;
+					rom_bank_0[0x4418] = (uint8_t)(adc_32_buf[0] >> 3) | 0x0FU;
+					rom_bank_0[0x4419] = (uint8_t)(adc_32_buf[0] >> 3) | 0x0FU;
 						
 					/* Volume 4: 0x4423 (0x4424) */
-					adc_32[7] = ((~adc_32[7]) & 0x0FFFU);
-					rom_bank_0[0x4423] = (uint8_t)((adc_32[7] / 1) >> 5) | 0x0FU;
-					rom_bank_0[0x4424] = (uint8_t)((adc_32[7] / 1) >> 5) | 0x0FU;
-						
+					rom_bank_0[0x4423] = (uint8_t)(adc_32_buf[7] >> 3) | 0x0FU;
+					rom_bank_0[0x4424] = (uint8_t)(adc_32_buf[7] >> 3) | 0x0FU;
+					
+					__disable_irq();
 							
 					while(MISC_PORT_REG_RD & SNES_CART_OFF){}
 					MISC_PORT_REG_WR = SNES_IRQ_OFF; // TRANSCEIVER CART TO SNES
@@ -319,7 +398,7 @@ static void MX_ADC1_Init(void)
     */
   hadc1.Instance = ADC1;
   hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV4;
-  hadc1.Init.Resolution = ADC_RESOLUTION_12B;
+  hadc1.Init.Resolution = ADC_RESOLUTION_10B;
   hadc1.Init.ScanConvMode = ADC_SCAN_ENABLE;
   hadc1.Init.ContinuousConvMode = ENABLE;
   hadc1.Init.DiscontinuousConvMode = DISABLE;
@@ -328,7 +407,7 @@ static void MX_ADC1_Init(void)
   hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
   hadc1.Init.NbrOfConversion = 8;
   hadc1.Init.DMAContinuousRequests = ENABLE;
-  hadc1.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
+  hadc1.Init.EOCSelection = ADC_EOC_SEQ_CONV;
   if (HAL_ADC_Init(&hadc1) != HAL_OK)
   {
     _Error_Handler(__FILE__, __LINE__);
@@ -338,7 +417,7 @@ static void MX_ADC1_Init(void)
     */
   sConfig.Channel = ADC_CHANNEL_8;
   sConfig.Rank = ADC_REGULAR_RANK_1;
-  sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
+  sConfig.SamplingTime = ADC_SAMPLETIME_480CYCLES;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
   {
     _Error_Handler(__FILE__, __LINE__);
